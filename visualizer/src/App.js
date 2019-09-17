@@ -27,7 +27,7 @@ class SearchInput extends React.Component {
               type="text"
             />
             <InputGroup.Append>
-              <Link className="btn btn-outline-primary" to={`/network-graph/${this.state.id}`}>Let's go</Link>
+              <Link className="btn btn-outline-primary" to={`/network-graph/${this.state.id}`}>Search</Link>
             </InputGroup.Append>
           </InputGroup>
       </div>
@@ -50,7 +50,7 @@ class NetworkGraph extends React.Component {
   componentWillMount() {
     var transactionId = this.state.id
 
-    var transactions = [
+    /*var transactions = [
       {
         "from": [
           {"account": "Mine 1", "amount": 5.49}, 
@@ -59,32 +59,41 @@ class NetworkGraph extends React.Component {
         ],
         "to": {"account": "Melter", "amount": 5.49},
       }
-    ]
+    ]*/
 
-    // nodes: [{"name": "foo", "name": "bar", "name": "tar"}]
-    //                    foo            bar
-    // links: [{"source": "0", "target": "1", "value": "1.0"}]
-    var result = {
-      "nodes": [],
-      "links": []
-    };
+    fetch(`http://127.0.0.1:8080/account/${transactionId}/transaction-tree`)
+    .then(response => response.json())
+    .then(function(response) {
+      //var transactions = JSON.parse(`{"items":[{"transaction":"fb40faaf-4519-4550-bc20-85cd22d775e9","from":[],"to":{"account":"d0840394-5ed2-46db-807a-7a5ca9c8924a","amount":10000}},{"transaction":"70667bbb-1931-42df-b643-95ea9a39ffdc","from":[{"account":"d0840394-5ed2-46db-807a-7a5ca9c8924a","amount":5000}],"to":{"account":"d1ae5ed1-b0d9-4252-9a41-70dbc392670b","amount":5000}}]}`).items
+      //var transactions = response.json()
+      var transactions = response.items;
+      
+      console.log(transactions)
+      // nodes: [{"name": "foo", "name": "bar", "name": "tar"}]
+      //                    foo            bar
+      // links: [{"source": "0", "target": "1", "value": "1.0"}]
+      var result = {
+        "nodes": [],
+        "links": []
+      };
 
-    var fromNames = transactions.map((transaction) => transaction.from.map((from) => from.account)).flat()
-    var toNames = transactions.map((transaction) => transaction.to.account)
-    var names = new Set()
-    fromNames.concat(toNames).forEach((name) => names.add(name))
-    result.nodes = Array.from(names).map((name) => ({"name": name}))
-    var onlyNames = result.nodes.map((obj) => obj.name)
-    var links = []
-    transactions.forEach((transaction) => {
-      transaction.from.forEach((from) => { 
-        links.push({source: onlyNames.indexOf(from.account), target: onlyNames.indexOf(transaction.to.account), value: from.amount})
-      }); 
+      var fromNames = transactions.map((transaction) => transaction.from.map((from) => from.account)).flat()
+      var toNames = transactions.map((transaction) => transaction.to.account)
+      var names = new Set()
+      fromNames.concat(toNames).forEach((name) => names.add(name))
+      result.nodes = Array.from(names).map((name) => ({"name": name}))
+      var onlyNames = result.nodes.map((obj) => obj.name)
+      var links = []
+      transactions.forEach((transaction) => {
+        transaction.from.forEach((from) => { 
+          links.push({source: onlyNames.indexOf(from.account), target: onlyNames.indexOf(transaction.to.account), value: from.amount})
+        }); 
+      });
+      result.links = links
+      this.setState({
+        transactions: result
+      })
     });
-    result.links = links
-    this.setState({
-      transactions: result
-    })
   }
 
   render() {
@@ -104,12 +113,8 @@ class NetworkGraph extends React.Component {
               opacity: 0.3
             },
             labels: {
-              fontSize: '12px'
+              fontSize: '12px',
             },
-            rects: {
-              strokeWidth: 2,
-              stroke: '#1A3177'
-            }
           }}
         />
     );
