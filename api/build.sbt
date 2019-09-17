@@ -9,5 +9,9 @@ libraryDependencies ++= Seq(
   "org.http4s"     %% "http4s-dsl"          % http4sVersion,
   "org.http4s"     %% "http4s-blaze-server" % http4sVersion,
   "org.http4s"     %% "http4s-blaze-client" % http4sVersion,
-  "ch.qos.logback" % "logback-classic"      % "1.2.3"
+  "ch.qos.logback" % "logback-classic"      % "1.2.3",
+  "org.tpolecat"   %% "doobie-core"         % "0.7.0",
+  "org.tpolecat"   %% "doobie-hikari"       % "0.7.0",
+  "org.tpolecat"   %% "doobie-postgres"     % "0.7.0",
+  "org.tpolecat"   %% "doobie-quill"        % "0.7.0"
 )
