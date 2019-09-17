@@ -8,7 +8,7 @@ import { Sankey } from 'react-vis';
 class SearchInput extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { id: "" }
+    this.state = { id: "", currentLink: null }
   }
 
   handleInputChange(id) {
@@ -50,53 +50,81 @@ class NetworkGraph extends React.Component {
   componentWillMount() {
     var transactionId = this.state.id
 
-    /*var transactions = [
+    var transactions = [
       {
         "from": [
-          {"account": "Mine 1", "amount": 5.49}, 
-          {"account": "Mine 2", "amount": 10.9},
-          {"account": "Mine 3", "amount": 5.49},
+          {"account": "Iron Mine A", "amount": 5}, 
+          {"account": "Iron Mine B", "amount": 10},
+          {"account": "Iron Mine C", "amount": 5},
         ],
-        "to": {"account": "Melter", "amount": 5.49},
+        "to": {"account": "Iron Smeltery A", "amount": 20},
+      },
+      {
+        "from": [
+          {"account": "Iron Mine A", "amount": 5}, 
+        ],
+        "to": {"account": "Iron Smeltery B", "amount": 5},
+      },
+      {
+        "from": [
+          {"account": "Copper Mine", "amount": 8},
+        ],
+        to: {"account": "Copper Smeltery", "amount": 8}
+      },
+      {
+        "from": [
+          {"account": "Iron Smeltery A", "amount": 10},
+          {"account": "Copper Smeltery", "amount": 4}
+        ],
+        to: {"account": "PCBs 'r' Us", "amount": 3}
+      },
+      {
+        "from": [
+          {"account": "Iron Smeltery B", "amount": 5},
+        ],
+        "to": {"account": "Bolts Inc", "amount": 2},
+      },
+      {
+        "from": [
+          {"account": "PCBs 'r' Us", amount: 3},
+          {account: "Bolts Inc", amount: 2}
+        ],
+        to: {account: "Laptops You Thought Would Work, Plc", amount: 1}
       }
-    ]*/
+    ]
 
-    fetch(`http://127.0.0.1:8080/account/${transactionId}/transaction-tree`)
+    // TODO Fix API
+    /*fetch(`/account/${transactionId}/transaction-tree`)
     .then(response => response.json())
-    .then(function(response) {
-      //var transactions = JSON.parse(`{"items":[{"transaction":"fb40faaf-4519-4550-bc20-85cd22d775e9","from":[],"to":{"account":"d0840394-5ed2-46db-807a-7a5ca9c8924a","amount":10000}},{"transaction":"70667bbb-1931-42df-b643-95ea9a39ffdc","from":[{"account":"d0840394-5ed2-46db-807a-7a5ca9c8924a","amount":5000}],"to":{"account":"d1ae5ed1-b0d9-4252-9a41-70dbc392670b","amount":5000}}]}`).items
-      //var transactions = response.json()
-      var transactions = response.items;
+    .then((response) => {*/
       
-      console.log(transactions)
-      // nodes: [{"name": "foo", "name": "bar", "name": "tar"}]
-      //                    foo            bar
-      // links: [{"source": "0", "target": "1", "value": "1.0"}]
-      var result = {
-        "nodes": [],
-        "links": []
-      };
-
-      var fromNames = transactions.map((transaction) => transaction.from.map((from) => from.account)).flat()
-      var toNames = transactions.map((transaction) => transaction.to.account)
-      var names = new Set()
-      fromNames.concat(toNames).forEach((name) => names.add(name))
-      result.nodes = Array.from(names).map((name) => ({"name": name}))
-      var onlyNames = result.nodes.map((obj) => obj.name)
-      var links = []
-      transactions.forEach((transaction) => {
-        transaction.from.forEach((from) => { 
-          links.push({source: onlyNames.indexOf(from.account), target: onlyNames.indexOf(transaction.to.account), value: from.amount})
-        }); 
-      });
-      result.links = links
-      this.setState({
-        transactions: result
-      })
+    // nodes: [{"name": "foo", "name": "bar", "name": "tar"}]
+    //                    foo            bar
+    // links: [{"source": "0", "target": "1", "value": "1.0"}]
+    var result = {
+      "nodes": [],
+      "links": []
+    };
+    var fromNames = transactions.map((transaction) => transaction.from.map((from) => from.account)).flat()
+    var toNames = transactions.map((transaction) => transaction.to.account)
+    var names = new Set()
+    fromNames.concat(toNames).forEach((name) => names.add(name))
+    result.nodes = Array.from(names).map((name) => ({"name": name}))
+    var onlyNames = result.nodes.map((obj) => obj.name)
+    var links = []
+    transactions.forEach((transaction) => {
+      transaction.from.forEach((from) => { 
+        links.push({source: onlyNames.indexOf(from.account), target: onlyNames.indexOf(transaction.to.account), value: from.amount})
+      }); 
     });
+    result.links = links
+    this.setState({
+      transactions: result
+    })
   }
 
   render() {
+    var currentLink = this.state.currentLink
     return (
       <Sankey
           animation
