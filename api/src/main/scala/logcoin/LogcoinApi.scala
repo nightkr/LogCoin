@@ -12,8 +12,19 @@ import doobie.implicits._
 import doobie.postgres.implicits._
 import java.time.Instant
 import cats.Monad
+import io.circe.generic.auto._
+import org.http4s.circe.CirceEntityEncoder._
+import io.circe.Encoder
+import io.circe.Decoder
 
 case class Id[A](raw: ju.UUID)
+
+object Id {
+  implicit def decoder[A]: Decoder[Id[A]] =
+    Decoder.decodeUUID.map(Id[A](_))
+  implicit def encoder[A]: Encoder[Id[A]] =
+    Encoder.encodeUUID.contramap[Id[A]](_.raw)
+}
 
 case class Account(id: Id[Account])
 
@@ -108,7 +119,6 @@ object LogcoinApi extends IOApp {
           TransactionTree
             .aroundAccount(Id[Account](accountId))
             .transact(transactor)
-            .map(_.toString())
             .flatMap(Ok(_))
       }
       .orNotFound
