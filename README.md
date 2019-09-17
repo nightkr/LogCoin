@@ -55,4 +55,5 @@ The current application uses a accounting ledger database that is used by a web 
 - This solution could utilize block chain technology in order to avoid centralized dependency.
 - The current web application displays the supply chain on a very basic level and should be extended with functionlity to go into each node prested.
 - Future development should strive to make the applikation easily integrateble with existing IT-systems.
-- Users should eb able to get the information by scanning a QR code or similair.
+- Users should be able to get the information by scanning a QR code or similar.
+- Could be integrated with the Internet of Logistics to correlate with shipping details and warehousing concerns.
