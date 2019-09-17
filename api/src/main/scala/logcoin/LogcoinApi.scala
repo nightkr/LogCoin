@@ -36,7 +36,7 @@ object Account {
   def byIds(ids: List[Id[Account]]): ConnectionIO[List[Account]] =
     NonEmptyList.fromList(ids) match {
       case Some(neIds) =>
-        (fr"SELECT ca.id, owner.name || ' ' || ca.currency FROM currencyaccount AS ca, owner WHERE ca.owner=owner.id AND " ++ Fragments
+        (fr"SELECT ca.id, owner.name || ' - ' || ca.currency FROM currencyaccount AS ca, owner WHERE ca.owner=owner.id AND " ++ Fragments
           .in(fr"ca.id", neIds)).query[Account].to[List]
       case None => Monad[ConnectionIO].pure(List())
     }
