@@ -1,7 +1,7 @@
 # LogCoin
 
-!()[screenshots/search.png]
-!()[screenshots/viz.png]
+![](screenshots/search.png)
+![](screenshots/viz.png)
 
 # Ericsson Logistics Challenge
 
