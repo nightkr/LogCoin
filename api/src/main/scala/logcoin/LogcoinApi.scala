@@ -16,6 +16,8 @@ import io.circe.generic.auto._
 import org.http4s.circe.CirceEntityEncoder._
 import io.circe.Encoder
 import io.circe.Decoder
+import cats.data.NonEmptyList
+import io.circe.KeyEncoder
 
 case class Id[A](raw: ju.UUID)
 
@@ -24,9 +26,21 @@ object Id {
     Decoder.decodeUUID.map(Id[A](_))
   implicit def encoder[A]: Encoder[Id[A]] =
     Encoder.encodeUUID.contramap[Id[A]](_.raw)
+  implicit def keyEncoder[A]: KeyEncoder[Id[A]] =
+    KeyEncoder.encodeKeyUUID.contramap[Id[A]](_.raw)
 }
 
-case class Account(id: Id[Account])
+case class Account(id: Id[Account], name: String)
+
+object Account {
+  def byIds(ids: List[Id[Account]]): ConnectionIO[List[Account]] =
+    NonEmptyList.fromList(ids) match {
+      case Some(neIds) =>
+        (fr"SELECT ca.id, owner.name || ' ' || ca.currency FROM currencyaccount AS ca, owner WHERE ca.owner=owner.id AND " ++ Fragments
+          .in(fr"ca.id", neIds)).query[Account].to[List]
+      case None => Monad[ConnectionIO].pure(List())
+    }
+}
 
 case class Transaction(id: Id[Transaction], time: Instant)
 
@@ -75,7 +89,10 @@ case class TransactionTreeItem(
     from: List[TransactionTreeTransfer],
     to: TransactionTreeTransfer
 )
-case class TransactionTree(items: List[TransactionTreeItem])
+case class TransactionTree(
+    items: List[TransactionTreeItem],
+    accountNames: Map[Id[Account], String]
+)
 object TransactionTree {
   def aroundAccount(accountId: Id[Account]) =
     Transaction
@@ -84,7 +101,16 @@ object TransactionTree {
         _.map(transaction => itemsForTransaction(transaction.id)).sequence
           .map(_.flatten)
       )
-      .map(TransactionTree(_))
+      .flatMap { items =>
+        val accountIds =
+          items.flatMap(item => item.to +: item.from).map(_.account)
+        Account.byIds(accountIds).map { accounts =>
+          TransactionTree(
+            items = items,
+            accountNames = accounts.map(acct => (acct.id, acct.name)).toMap
+          )
+        }
+      }
 
   def itemsForTransaction(
       transactionId: Id[Transaction]
