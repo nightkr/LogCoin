@@ -1,3 +1,5 @@
+# LogCoin
+
 # Ericsson Logistics Challenge
 
 ## Come up with a solution that can help and detect fraudulent shipments in supply chains in order to avoid unsustainable and inhumane conditions taking place in production
